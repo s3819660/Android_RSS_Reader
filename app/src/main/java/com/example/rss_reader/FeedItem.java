@@ -1,6 +1,9 @@
 package com.example.rss_reader;
 
-public class FeedItem {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class FeedItem implements Parcelable {
     private String title;
     private String description;
     private String link;
@@ -13,6 +16,24 @@ public class FeedItem {
         this.description = description;
         this.link = link;
     }
+
+    protected FeedItem(Parcel in) {
+        title = in.readString();
+        description = in.readString();
+        link = in.readString();
+    }
+
+    public static final Creator<FeedItem> CREATOR = new Creator<FeedItem>() {
+        @Override
+        public FeedItem createFromParcel(Parcel in) {
+            return new FeedItem(in);
+        }
+
+        @Override
+        public FeedItem[] newArray(int size) {
+            return new FeedItem[size];
+        }
+    };
 
     public String getTitle() {
         return title;
@@ -36,5 +57,26 @@ public class FeedItem {
 
     public void setLink(String link) {
         this.link = link;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(title);
+        parcel.writeString(description);
+        parcel.writeString(link);
+    }
+
+    @Override
+    public String toString() {
+        return "FeedItem{" +
+                "title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", link='" + link + '\'' +
+                '}';
     }
 }

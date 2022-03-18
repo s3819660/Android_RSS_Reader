@@ -6,11 +6,19 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_baseline_menu_24"
+        style="?android:attr/borderlessButtonStyle"
+        android:background="@android:color/transparent"/>
+
     <Button
         android:id="@+id/saved_items_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Saved"/>
+        android:text="Saved"
+        android:onClick="onSavedListButtonClick"/>
 
     <com.google.android.gms.common.SignInButton
         android:id="@+id/sign_in_button"
