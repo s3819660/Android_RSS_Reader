@@ -11,6 +11,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,13 +22,18 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -60,6 +67,10 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
     private int lastSavedItemIndex;
 
     private SignInButton signInButton;
+    private EditText editText;
+    private Button saveButton;
+    private Button signOutButton;
+    String urlString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +93,11 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
     private void getViews() {
         signInButton = findViewById(R.id.sign_in_button);
         signInButton.setColorScheme(SignInButton.COLOR_DARK);
+        editText = findViewById(R.id.rss_edit_text);
+
+        saveButton = findViewById(R.id.saved_items_button);
+        signOutButton = findViewById(R.id.sign_out_button);
+
         TextView textView = (TextView) signInButton.getChildAt(0);
         textView.setText("Sign in with Google");
         signInButton.setOnClickListener(view -> signIn());
@@ -90,6 +106,7 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
     }
 
     private void initServices() {
+        urlString = "https://vnexpress.net/rss/the-gioi.rss";
         new ProcessInBackground().execute();
 
         // Configure Google Sign In
@@ -111,9 +128,14 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
             userEmail = mAuth.getCurrentUser().getEmail();
             loadSavedFeedItems(false);
 
+            signInButton.setVisibility(View.GONE);
+
             return;
         }
+
         userEmail = "";
+        saveButton.setVisibility(View.GONE);
+        signOutButton.setVisibility(View.GONE);
     }
 
     private void signIn() {
@@ -138,6 +160,10 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
 
                 userEmail = account.getEmail();
                 loadSavedFeedItems(false);
+
+                signInButton.setVisibility(View.GONE);
+                saveButton.setVisibility(View.VISIBLE);
+                signOutButton.setVisibility(View.VISIBLE);
             } catch (ApiException e) {
                 // Google Sign In failed, update UI appropriately
                 Toast.makeText(this, "Log in failed", Toast.LENGTH_SHORT).show();
@@ -174,7 +200,11 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
     private void updateUI(FirebaseUser user) {
         if (user != null) {
             signInButton.setVisibility(View.GONE);
+            saveButton.setVisibility(View.VISIBLE);
+            signOutButton.setVisibility(View.VISIBLE);
         } else {
+            saveButton.setVisibility(View.GONE);
+            signOutButton.setVisibility(View.GONE);
             signInButton.setVisibility(View.VISIBLE);
         }
     }
@@ -195,15 +225,17 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
                             if (i == task.getResult().size())
                                 lastSavedItemIndex = Integer.parseInt(document.getId());
                         }
-//                        Log.d(TAG, "lastSavedItemIndex=" + lastSavedItemIndex);
 
-                        for (FeedItem item:
+                        for (FeedItem item :
                                 savedItems) {
                             Log.d(TAG, item.toString());
                         }
 
                         if (isRedirected)
                             startSavedItemsActivity();
+
+                        initRecyclerView(MainActivity.this, feedItems);
+
                     } else {
                         Log.d(TAG, "Error getting documents: ", task.getException());
                     }
@@ -249,6 +281,13 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
         saveFeedItemToFirestore(savedItem);
     }
 
+    @Override
+    public void onUnsavedItemListener(Intent intent) {
+        FeedItem unsavedItem = intent.getParcelableExtra("unsavedItem");
+        Log.d(TAG, "unsavedItem=" + unsavedItem);
+        unsaveFeedItemFromFirestore(unsavedItem);
+    }
+
     private void saveFeedItemToFirestore(FeedItem savedItem) {
         try {
             if (!userEmail.equals("")) {
@@ -277,6 +316,27 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
         }
     }
 
+    private void unsaveFeedItemFromFirestore(FeedItem unsavedItem) {
+        CollectionReference itemsRef = db.collection(userEmail);
+        Query query = itemsRef.whereEqualTo("link", unsavedItem.getLink());
+        query.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                for (DocumentSnapshot document : task.getResult()) {
+                    Log.d(TAG, "here" + document.toString());
+                    itemsRef.document(document.getId()).delete();
+                }
+                Log.d(TAG, "Item successfully deleted!");
+            } else {
+                Log.d(TAG, "Error getting documents: ", task.getException());
+            }
+        });
+    }
+
+    public void onSearchButtonClick(View view) {
+        urlString = editText.getText().toString();
+        new ProcessInBackground().execute();
+    }
+
     public class ProcessInBackground extends AsyncTask<Integer, Void, Exception> {
 
         ProgressDialog progressDialog = new ProgressDialog(MainActivity.this);
@@ -291,9 +351,17 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
 
         @Override
         protected Exception doInBackground(Integer... integers) {
+            Log.d(TAG, "getRSSFeed=" + urlString);
 
+            return getRSSFeed(urlString);
+        }
+
+        protected Exception getRSSFeed(String urlString) {
             try {
-                URL url = new URL("https://vnexpress.net/rss/the-gioi.rss");
+                feedItems.clear();
+                URL url = new URL(urlString);
+
+                Log.d(TAG, "getRSSFeed=" + urlString);
 
                 XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
 
@@ -335,6 +403,8 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
                                 feedItems.add(new FeedItem(title, description, link));
                             }
                         }
+
+//                        loadSavedFeedItems(false);
                     } else if (eventType == XmlPullParser.END_DOCUMENT && xpp.getName().equalsIgnoreCase("item")) {
                         insideItem = false;
                     }
@@ -356,16 +426,17 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
         protected void onPostExecute(Exception e) {
             super.onPostExecute(e);
 
-            initRecyclerView(MainActivity.this, feedItems);
+            if (userEmail.isEmpty())
+                initRecyclerView(MainActivity.this, feedItems);
+            else loadSavedFeedItems(false);
 
             progressDialog.dismiss();
         }
+    }
 
-        private void initRecyclerView(Context context, ArrayList<FeedItem> itemList) {
-//            feedItemAdapter = new FeedItemAdapter(context, itemList);
-            feedItemAdapter = new FeedItemAdapter(context, itemList, false);
-            recyclerView.setAdapter(feedItemAdapter);
-            recyclerView.setLayoutManager(new LinearLayoutManager(context));
-        }
+    private void initRecyclerView(Context context, ArrayList<FeedItem> itemList) {
+        feedItemAdapter = new FeedItemAdapter(context, itemList, savedItems, false);
+        recyclerView.setAdapter(feedItemAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(context));
     }
 }

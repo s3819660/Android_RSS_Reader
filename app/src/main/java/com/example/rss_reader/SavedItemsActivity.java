@@ -13,7 +13,10 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firestore.admin.v1.Index;
 
 import java.util.ArrayList;
@@ -56,7 +59,7 @@ public class SavedItemsActivity extends AppCompatActivity implements FeedItemAda
     private void initRecyclerView(Context context, ArrayList<FeedItem> itemList) {
         recyclerView = findViewById(R.id.saved_recycler_view);
 //        feedItemAdapter = new FeedItemAdapter(context, itemList);
-        feedItemAdapter = new FeedItemAdapter(context, itemList, true);
+        feedItemAdapter = new FeedItemAdapter(context, itemList, savedItems, true);
         recyclerView.setAdapter(feedItemAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
     }
@@ -68,25 +71,56 @@ public class SavedItemsActivity extends AppCompatActivity implements FeedItemAda
         unsaveFeedItemFromFirestore(unsavedItem);
     }
 
+    @Override
+    public void onUnsavedItemListener(Intent intent) {
+        FeedItem unsavedItem = intent.getParcelableExtra("unsavedItem");
+        Log.d(TAG, "unsavedItem=" + unsavedItem);
+        unsaveFeedItemFromFirestore(unsavedItem);
+    }
+
+//    private void unsaveFeedItemFromFirestore(FeedItem unsavedItem) {
+//        int removeIndex = savedItems.indexOf(unsavedItem);
+//
+//        db.collection(userEmail).document(((removeIndex + 1) + ""))
+//                .delete()
+//                .addOnSuccessListener(aVoid -> {
+//                    Log.d(TAG, "DocumentSnapshot successfully deleted!");
+//                    Toast.makeText(SavedItemsActivity.this, "Unsaved item", Toast.LENGTH_SHORT).show();
+//
+//                    try {
+//                        savedItems.remove(removeIndex);
+//                        feedItemAdapter.notifyItemRemoved(removeIndex);
+//                    } catch (IndexOutOfBoundsException e) {
+//                        Log.d(TAG, e.getMessage());
+//                    }
+//                })
+//                .addOnFailureListener(e -> {
+//                    Log.w(TAG, "Error deleting document", e);
+//                    Toast.makeText(SavedItemsActivity.this, "Cannot unsave item", Toast.LENGTH_SHORT).show();
+//                });
+//    }
+
     private void unsaveFeedItemFromFirestore(FeedItem unsavedItem) {
         int removeIndex = savedItems.indexOf(unsavedItem);
 
-        db.collection(userEmail).document(((removeIndex + 1) + ""))
-                .delete()
-                .addOnSuccessListener(aVoid -> {
-                    Log.d(TAG, "DocumentSnapshot successfully deleted!");
-                    Toast.makeText(SavedItemsActivity.this, "Unsaved item", Toast.LENGTH_SHORT).show();
-
+        CollectionReference itemsRef = db.collection(userEmail);
+        Query query = itemsRef.whereEqualTo("link", unsavedItem.getLink());
+        query.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                for (DocumentSnapshot document : task.getResult()) {
+                    Log.d(TAG, "here" + document.toString());
+                    itemsRef.document(document.getId()).delete();
                     try {
                         savedItems.remove(removeIndex);
                         feedItemAdapter.notifyItemRemoved(removeIndex);
                     } catch (IndexOutOfBoundsException e) {
                         Log.d(TAG, e.getMessage());
                     }
-                })
-                .addOnFailureListener(e -> {
-                    Log.w(TAG, "Error deleting document", e);
-                    Toast.makeText(SavedItemsActivity.this, "Cannot unsave item", Toast.LENGTH_SHORT).show();
-                });
+                }
+                Log.d(TAG, "Item successfully deleted!");
+            } else {
+                Log.d(TAG, "Error getting documents: ", task.getException());
+            }
+        });
     }
 }

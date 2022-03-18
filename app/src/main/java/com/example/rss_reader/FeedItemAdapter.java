@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.service.autofill.ImageTransformation;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,10 +21,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHolder> {
     private Context mContext;
     private ArrayList<FeedItem> items;
+    private ArrayList<FeedItem> savedItems;
     private OnSavedItemListener onSavedItemListener;
     private boolean isSaved;
 
@@ -39,6 +43,29 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
         }
     }
 
+    public FeedItemAdapter(Context mContext, ArrayList<FeedItem> items, ArrayList<FeedItem> savedItems, boolean isSaved) {
+        this.mContext = mContext;
+        this.items = items;
+        this.isSaved = isSaved;
+        this.savedItems = savedItems;
+
+        try {
+            this.onSavedItemListener = ((OnSavedItemListener) mContext);
+        } catch (ClassCastException e) {
+            Log.d("FeedItemAdapter", e.getMessage());
+        }
+
+//        for (FeedItem item:
+//                savedItems) {
+//            Log.d("onBindViewHolder", "save" + item.toString());
+//        }
+//
+//        for (FeedItem item:
+//                items) {
+//            Log.d("onBindViewHolder", "item" + item.toString());
+//        }
+    }
+
     @NonNull
     @Override
     public FeedItemAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
@@ -52,6 +79,26 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
     public void onBindViewHolder(@NonNull FeedItemAdapter.ViewHolder viewHolder, int i) {
         FeedItem feedItem = items.get(i);
         viewHolder.textTitle.setText(feedItem.getTitle());
+
+        new DownloadImageFromInternet(viewHolder.imageView).execute(getImageUrlString(feedItem.getDescription()));
+
+
+        for (FeedItem item:
+             savedItems) {
+            if (item.getLink().equalsIgnoreCase(feedItem.getLink())) {
+                viewHolder.saveButton.setVisibility(View.GONE);
+                viewHolder.unsaveButton.setVisibility(View.VISIBLE);
+                return;
+            }
+        }
+    }
+
+    private String getImageUrlString(String description) {
+        final Pattern pattern = Pattern.compile("src=\"(.+?)\"", Pattern.DOTALL);
+        final Matcher matcher = pattern.matcher(description);
+        matcher.find();
+//        Log.d("getImageUrlString", matcher.group(1)); // Prints String I want to extract
+        return matcher.group(1);
     }
 
     @Override
@@ -63,30 +110,33 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
         private TextView textTitle;
         private Button saveButton;
         private Button unsaveButton;
+        private ImageView imageView;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            new DownloadImageFromInternet(itemView.findViewById(R.id.image_view)).execute("https://pbs.twimg.com/profile_images/630285593268752384/iD1MkFQ0.png");
+//            new DownloadImageFromInternet(itemView.findViewById(R.id.image_view)).execute("");
 
             textTitle = itemView.findViewById(R.id.title_text);
             saveButton = itemView.findViewById(R.id.save_button);
             unsaveButton = itemView.findViewById(R.id.unsave_button);
+            imageView = itemView.findViewById(R.id.image_view);
 
             itemView.findViewById(R.id.visit_button).setOnClickListener(view ->
                     handleVisitButtonClick(itemView));
 
+            unsaveButton.setOnClickListener(view ->
+                    handleUnsaveButtonClick());
+            saveButton.setOnClickListener(view ->
+                    handleSaveButtonClick());
+
             if (!isSaved) {
                 unsaveButton.setVisibility(View.GONE);
                 saveButton.setVisibility(View.VISIBLE);
-                saveButton.setOnClickListener(view ->
-                        handleSaveButtonClick());
                 return;
             }
-
             saveButton.setVisibility(View.GONE);
             unsaveButton.setVisibility(View.VISIBLE);
-            unsaveButton.setOnClickListener(view ->
-                    handleUnsaveButtonClick());
+
         }
 
         private void handleVisitButtonClick(View itemView) {
@@ -111,7 +161,11 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
             Intent intent = new Intent();
             intent.putExtra("unsavedItem", item);
 
-            onSavedItemListener.onSavedItemListener(intent);
+            // Visible save button
+            unsaveButton.setVisibility(View.GONE);
+            saveButton.setVisibility(View.VISIBLE);
+
+            onSavedItemListener.onUnsavedItemListener(intent);
         }
     }
 
@@ -120,7 +174,8 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
 
         public DownloadImageFromInternet(ImageView imageView) {
             this.imageView = imageView;
-            Toast.makeText(mContext, "Please wait, it may take a few minute...", Toast.LENGTH_SHORT).show();
+
+            Toast.makeText(mContext, "Loading image...", Toast.LENGTH_SHORT).show();
         }
 
         protected Bitmap doInBackground(String... urls) {
@@ -143,5 +198,6 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
 
     public interface OnSavedItemListener {
         public void onSavedItemListener(Intent intent);
+        public void onUnsavedItemListener(Intent intent);
     }
 }

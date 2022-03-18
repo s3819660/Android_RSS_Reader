@@ -6,35 +6,56 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_baseline_menu_24"
-        style="?android:attr/borderlessButtonStyle"
-        android:background="@android:color/transparent"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-    <Button
-        android:id="@+id/saved_items_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Saved"
-        android:onClick="onSavedListButtonClick"/>
+        <EditText
+            android:id="@+id/rss_edit_text"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:hint="Enter a url...."
+            android:layout_weight="1"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Search"
+            android:onClick="onSearchButtonClick"/>
+    </LinearLayout>
 
     <com.google.android.gms.common.SignInButton
         android:id="@+id/sign_in_button"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"/>
 
-    <Button
+    <ImageButton
+        android:id="@+id/menu_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="onSignOutBtnClick"
-        android:text="Sign out" />
+        android:background="@android:color/transparent"
+        android:src="@drawable/ic_baseline_menu_24"
+        style="?android:attr/borderlessButtonStyle"
+        android:layout_gravity="end"
+        android:visibility="gone"/>
 
-    <!--    <ListView-->
-    <!--        android:id="@+id/list_view"-->
-    <!--        android:layout_width="match_parent"-->
-    <!--        android:layout_height="wrap_content"/>-->
+    <Button
+        android:id="@+id/saved_items_button"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:onClick="onSavedListButtonClick"
+        android:text="Saved"
+        android:layout_gravity="center"/>
+
+    <Button
+        android:id="@+id/sign_out_button"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:onClick="onSignOutBtnClick"
+        android:text="Sign out"
+        android:layout_gravity="center"
+        android:backgroundTint="@color/black"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
