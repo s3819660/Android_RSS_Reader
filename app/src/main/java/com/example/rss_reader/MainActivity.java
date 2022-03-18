@@ -90,6 +90,7 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
         initServices();
     }
 
+    // Get all view components
     private void getViews() {
         signInButton = findViewById(R.id.sign_in_button);
         signInButton.setColorScheme(SignInButton.COLOR_DARK);
@@ -99,12 +100,13 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
         signOutButton = findViewById(R.id.sign_out_button);
 
         TextView textView = (TextView) signInButton.getChildAt(0);
-        textView.setText("Sign in with Google");
+        textView.setText(R.string.sign_in_with_google);
         signInButton.setOnClickListener(view -> signIn());
 
         recyclerView = findViewById(R.id.recycler_view);
     }
 
+    // Initialize Firestore and Firebase authentication
     private void initServices() {
         urlString = "https://vnexpress.net/rss/the-gioi.rss";
         new ProcessInBackground().execute();
@@ -337,6 +339,7 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
         new ProcessInBackground().execute();
     }
 
+    // Async task to retrieve RSS feed
     public class ProcessInBackground extends AsyncTask<Integer, Void, Exception> {
 
         ProgressDialog progressDialog = new ProgressDialog(MainActivity.this);

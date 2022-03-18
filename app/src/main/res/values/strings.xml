@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">RSS_Reader</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+    <string name="saved">Saved</string>
+    <string name="sign_out">Sign out</string>
+    <string name="url_https_vnexpress_net_rss_kinh_doanh_rss">url.... (https://vnexpress.net/rss/kinh-doanh.rss)</string>
+    <string name="search">Search</string>
+    <string name="visit">visit</string>
+    <string name="save">save</string>
+    <string name="unsave">unsave</string>
+    <string name="image">Image</string>
+    <string name="menu">Menu</string>
 </resources>

@@ -70,9 +70,8 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
     @Override
     public FeedItemAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         LayoutInflater inflater = LayoutInflater.from(mContext);
-        View heroView = inflater.inflate(R.layout.feed_item_row, viewGroup, false);
-        ViewHolder viewHolder = new ViewHolder(heroView);
-        return viewHolder;
+        View view = inflater.inflate(R.layout.feed_item_row, viewGroup, false);
+        return new ViewHolder(view);
     }
 
     @Override
@@ -169,6 +168,7 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
         }
     }
 
+    // Async task to download RSS news item image
     private class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
         ImageView imageView;
 
@@ -196,8 +196,9 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
         }
     }
 
+    // interface to call from activity
     public interface OnSavedItemListener {
-        public void onSavedItemListener(Intent intent);
-        public void onUnsavedItemListener(Intent intent);
+        void onSavedItemListener(Intent intent);
+        void onUnsavedItemListener(Intent intent);
     }
 }

@@ -11,11 +11,12 @@
         <ImageView
             android:id="@+id/image_view"
             android:layout_width="100dp"
-            android:layout_height="100dp" />
+            android:layout_height="100dp"
+            android:contentDescription="@string/image" />
 
         <TextView
             android:id="@+id/title_text"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_margin="10dp"
@@ -31,21 +32,22 @@
             android:id="@+id/visit_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="visit" />
+            android:text="@string/visit" />
 
         <Button
             android:id="@+id/save_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:text="save" />
+            android:layout_marginStart="10dp"
+            android:text="@string/save" />
 
         <Button
             android:id="@+id/unsave_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="10dp"
-            android:text="Unsave" />
+            android:text="@string/unsave"
+            style="?android:attr/buttonBarButtonStyle" />
     </LinearLayout>
 
 </LinearLayout>

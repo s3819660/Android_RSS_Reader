@@ -12,15 +12,18 @@
 
         <EditText
             android:id="@+id/rss_edit_text"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="60dp"
-            android:hint="Enter a url...."
-            android:layout_weight="1"/>
+            android:textSize="14sp"
+            android:hint="@string/url_https_vnexpress_net_rss_kinh_doanh_rss"
+            android:layout_weight="1"
+            android:inputType="text"
+            android:autofillHints="https://vnexpress.net/rss/kinh-doanh.rss" />
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Search"
+            android:text="@string/search"
             android:onClick="onSearchButtonClick"/>
     </LinearLayout>
 
@@ -30,22 +33,23 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"/>
 
-    <ImageButton
-        android:id="@+id/menu_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        android:src="@drawable/ic_baseline_menu_24"
-        style="?android:attr/borderlessButtonStyle"
-        android:layout_gravity="end"
-        android:visibility="gone"/>
+<!--    <ImageButton-->
+<!--        android:id="@+id/menu_button"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:background="@android:color/transparent"-->
+<!--        android:src="@drawable/ic_baseline_menu_24"-->
+<!--        style="?android:attr/borderlessButtonStyle"-->
+<!--        android:layout_gravity="end"-->
+<!--        android:visibility="gone"-->
+<!--        android:contentDescription="@string/menu" />-->
 
     <Button
         android:id="@+id/saved_items_button"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:onClick="onSavedListButtonClick"
-        android:text="Saved"
+        android:text="@string/saved"
         android:layout_gravity="center"/>
 
     <Button
@@ -53,7 +57,7 @@
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:onClick="onSignOutBtnClick"
-        android:text="Sign out"
+        android:text="@string/sign_out"
         android:layout_gravity="center"
         android:backgroundTint="@color/black"/>
 
