@@ -7,6 +7,7 @@ public class FeedItem implements Parcelable {
     private String title;
     private String description;
     private String link;
+    private String pubDate;
 
     public FeedItem() {
     }
@@ -17,10 +18,18 @@ public class FeedItem implements Parcelable {
         this.link = link;
     }
 
+    public FeedItem(String title, String description, String link, String pubDate) {
+        this.title = title;
+        this.description = description;
+        this.link = link;
+        this.pubDate = pubDate;
+    }
+
     protected FeedItem(Parcel in) {
         title = in.readString();
         description = in.readString();
         link = in.readString();
+        pubDate = in.readString();
     }
 
     public static final Creator<FeedItem> CREATOR = new Creator<FeedItem>() {
@@ -59,6 +68,18 @@ public class FeedItem implements Parcelable {
         this.link = link;
     }
 
+    public String getPubDate() {
+        return pubDate;
+    }
+
+    public void setPubDate(String pubDate) {
+        this.pubDate = pubDate;
+    }
+
+    public static Creator<FeedItem> getCREATOR() {
+        return CREATOR;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -69,6 +90,7 @@ public class FeedItem implements Parcelable {
         parcel.writeString(title);
         parcel.writeString(description);
         parcel.writeString(link);
+        parcel.writeString(pubDate);
     }
 
     @Override
@@ -77,6 +99,7 @@ public class FeedItem implements Parcelable {
                 "title='" + title + '\'' +
                 ", description='" + description + '\'' +
                 ", link='" + link + '\'' +
+                ", pubDate='" + pubDate + '\'' +
                 '}';
     }
 }

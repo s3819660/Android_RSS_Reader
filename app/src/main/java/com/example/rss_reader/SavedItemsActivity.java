@@ -78,28 +78,6 @@ public class SavedItemsActivity extends AppCompatActivity implements FeedItemAda
         unsaveFeedItemFromFirestore(unsavedItem);
     }
 
-//    private void unsaveFeedItemFromFirestore(FeedItem unsavedItem) {
-//        int removeIndex = savedItems.indexOf(unsavedItem);
-//
-//        db.collection(userEmail).document(((removeIndex + 1) + ""))
-//                .delete()
-//                .addOnSuccessListener(aVoid -> {
-//                    Log.d(TAG, "DocumentSnapshot successfully deleted!");
-//                    Toast.makeText(SavedItemsActivity.this, "Unsaved item", Toast.LENGTH_SHORT).show();
-//
-//                    try {
-//                        savedItems.remove(removeIndex);
-//                        feedItemAdapter.notifyItemRemoved(removeIndex);
-//                    } catch (IndexOutOfBoundsException e) {
-//                        Log.d(TAG, e.getMessage());
-//                    }
-//                })
-//                .addOnFailureListener(e -> {
-//                    Log.w(TAG, "Error deleting document", e);
-//                    Toast.makeText(SavedItemsActivity.this, "Cannot unsave item", Toast.LENGTH_SHORT).show();
-//                });
-//    }
-
     private void unsaveFeedItemFromFirestore(FeedItem unsavedItem) {
         int removeIndex = savedItems.indexOf(unsavedItem);
 

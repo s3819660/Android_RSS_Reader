@@ -22,7 +22,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
@@ -33,7 +32,6 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -43,8 +41,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements FeedItemAdapter.OnSavedItemListener {
@@ -59,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
     ArrayList<String> titles;
     ArrayList<String> descriptions;
     ArrayList<String> links;
+    ArrayList<String> pubDates;
 
     private RecyclerView recyclerView;
     private FeedItemAdapter feedItemAdapter;
@@ -77,21 +80,20 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        titles = new ArrayList<>();
-        descriptions = new ArrayList<>();
-        links = new ArrayList<>();
-        feedItems = new ArrayList<>();
-        savedItems = new ArrayList<>();
-
         // Get views
         getViews();
-
-        // Sign in services
-        initServices();
     }
 
     // Get all view components
     private void getViews() {
+        titles = new ArrayList<>();
+        descriptions = new ArrayList<>();
+        links = new ArrayList<>();
+        pubDates = new ArrayList<>();
+
+        feedItems = new ArrayList<>();
+        savedItems = new ArrayList<>();
+
         signInButton = findViewById(R.id.sign_in_button);
         signInButton.setColorScheme(SignInButton.COLOR_DARK);
         editText = findViewById(R.id.rss_edit_text);
@@ -194,6 +196,10 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
     @Override
     public void onStart() {
         super.onStart();
+
+        // Sign in services
+        initServices();
+
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
         updateUI(currentUser);
@@ -220,7 +226,7 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
                         int i = 0;
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             i++;
-                            Log.d(TAG, document.getId() + " => " + document.getData());
+//                            Log.d(TAG, document.getId() + " => " + document.getData());
                             savedItems.add(document.toObject(FeedItem.class));
 //                            Log.d(TAG, "i=" + i);
 
@@ -228,10 +234,10 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
                                 lastSavedItemIndex = Integer.parseInt(document.getId());
                         }
 
-                        for (FeedItem item :
-                                savedItems) {
-                            Log.d(TAG, item.toString());
-                        }
+//                        for (FeedItem item :
+//                                savedItems) {
+//                            Log.d(TAG, item.toString());
+//                        }
 
                         if (isRedirected)
                             startSavedItemsActivity();
@@ -286,7 +292,7 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
     @Override
     public void onUnsavedItemListener(Intent intent) {
         FeedItem unsavedItem = intent.getParcelableExtra("unsavedItem");
-        Log.d(TAG, "unsavedItem=" + unsavedItem);
+//        Log.d(TAG, "unsavedItem=" + unsavedItem);
         unsaveFeedItemFromFirestore(unsavedItem);
     }
 
@@ -324,7 +330,7 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
         query.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 for (DocumentSnapshot document : task.getResult()) {
-                    Log.d(TAG, "here" + document.toString());
+//                    Log.d(TAG, "here" + document.toString());
                     itemsRef.document(document.getId()).delete();
                 }
                 Log.d(TAG, "Item successfully deleted!");
@@ -364,7 +370,7 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
                 feedItems.clear();
                 URL url = new URL(urlString);
 
-                Log.d(TAG, "getRSSFeed=" + urlString);
+//                Log.d(TAG, "getRSSFeed=" + urlString);
 
                 XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
 
@@ -384,6 +390,7 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
                 String title = "";
                 String description = "";
                 String link = "";
+                String pubDate = "";
 
                 while (eventType != XmlPullParser.END_DOCUMENT) {
                     if (eventType == XmlPullParser.START_TAG) {
@@ -399,11 +406,17 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
                                 description = xpp.nextText();
                                 descriptions.add(description);
                             }
-                        } else if (xpp.getName().equalsIgnoreCase("link")) {
+                        } else if (xpp.getName().equalsIgnoreCase("pubDate")) {
+                            if (insideItem) {
+                                pubDate = xpp.nextText();
+                                pubDates.add(pubDate);
+                            }
+                        }
+                        else if (xpp.getName().equalsIgnoreCase("link")) {
                             if (insideItem) {
                                 link = xpp.nextText();
                                 links.add(link);
-                                feedItems.add(new FeedItem(title, description, link));
+                                feedItems.add(new FeedItem(title, description, link, pubDate));
                             }
                         }
 

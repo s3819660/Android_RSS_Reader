@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.service.autofill.ImageTransformation;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,28 +19,21 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.InputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHolder> {
+    private static final String TAG = "FeedItemAdapter";
     private Context mContext;
     private ArrayList<FeedItem> items;
     private ArrayList<FeedItem> savedItems;
     private OnSavedItemListener onSavedItemListener;
     private boolean isSaved;
-
-    public FeedItemAdapter(Context mContext, ArrayList<FeedItem> items, boolean isSaved) {
-        this.mContext = mContext;
-        this.items = items;
-        this.isSaved = isSaved;
-
-        try {
-            this.onSavedItemListener = ((OnSavedItemListener) mContext);
-        } catch (ClassCastException e) {
-            Log.d("FeedItemAdapter", e.getMessage());
-        }
-    }
 
     public FeedItemAdapter(Context mContext, ArrayList<FeedItem> items, ArrayList<FeedItem> savedItems, boolean isSaved) {
         this.mContext = mContext;
@@ -77,27 +69,134 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
     @Override
     public void onBindViewHolder(@NonNull FeedItemAdapter.ViewHolder viewHolder, int i) {
         FeedItem feedItem = items.get(i);
-        viewHolder.textTitle.setText(feedItem.getTitle());
+        viewHolder.titleText.setText(feedItem.getTitle());
+        viewHolder.pubdateText.setText(calculateTimeDifference(feedItem.getPubDate()));
+        viewHolder.descriptionText.setText(extractDescription(feedItem.getDescription()));
 
-        new DownloadImageFromInternet(viewHolder.imageView).execute(getImageUrlString(feedItem.getDescription()));
+        new DownloadImageFromInternet(viewHolder.imageView).execute(extractImageUrlString(feedItem.getDescription()));
 
 
-        for (FeedItem item:
-             savedItems) {
+        for (FeedItem item :
+                savedItems) {
             if (item.getLink().equalsIgnoreCase(feedItem.getLink())) {
-                viewHolder.saveButton.setVisibility(View.GONE);
-                viewHolder.unsaveButton.setVisibility(View.VISIBLE);
+                viewHolder.bookmarkImage.setVisibility(View.GONE);
+                viewHolder.unbookmarkImage.setVisibility(View.VISIBLE);
+
+//                viewHolder.saveButton.setVisibility(View.GONE);
+//                viewHolder.unsaveButton.setVisibility(View.VISIBLE);
                 return;
             }
         }
     }
 
-    private String getImageUrlString(String description) {
-        final Pattern pattern = Pattern.compile("src=\"(.+?)\"", Pattern.DOTALL);
-        final Matcher matcher = pattern.matcher(description);
-        matcher.find();
-//        Log.d("getImageUrlString", matcher.group(1)); // Prints String I want to extract
-        return matcher.group(1);
+    private String calculateTimeDifference(String startDateStr) {
+
+        // SimpleDateFormat converts the
+        // string format to date object
+        SimpleDateFormat formatter
+                = new SimpleDateFormat("EEE, " +
+                "dd MMM yyyy HH:mm:ss zzz", Locale.US);
+
+        // Try Block
+        try {
+
+            // parse method is used to parse
+            // the text from a string to
+            // produce the date
+            Log.d(TAG, "startDateStr=" + startDateStr);
+
+            Date date1 = formatter.parse(startDateStr);
+            Date date2 = new Date();
+
+            if (date1 == null)
+                return null;
+
+            // Calucalte time difference
+            // in milliseconds
+            long differenceInTime
+                    = date2.getTime() - date1.getTime();
+
+            // Calucalte time difference in
+            // seconds, minutes, hours, years,
+            // and days
+            long differenceInSeconds
+                    = (differenceInTime
+                    / 1000)
+                    % 60;
+
+            long differenceInMinutes
+                    = (differenceInTime
+                    / (1000 * 60))
+                    % 60;
+
+            long differenceInHours
+                    = (differenceInTime
+                    / (1000 * 60 * 60))
+                    % 24;
+
+            long differenceInYears
+                    = (differenceInTime
+                    / (1000l * 60 * 60 * 24 * 365));
+
+            long differenceInDays
+                    = (differenceInTime
+                    / (1000 * 60 * 60 * 24))
+                    % 365;
+
+            // Print the date difference in
+            // years, in days, in hours, in
+            // minutes, and in seconds
+            Log.d(TAG,
+                    differenceInYears
+                            + " years, "
+                            + differenceInDays
+                            + " days, "
+                            + differenceInHours
+                            + " hours, "
+                            + differenceInMinutes
+                            + " minutes, "
+                            + differenceInSeconds
+                            + " seconds");
+
+            return (differenceInYears > 0 ? (differenceInYears + " year" + (differenceInYears > 1 ? "s" : ""))
+                    : differenceInDays > 0 ? (differenceInDays + " day" + (differenceInDays > 1 ? "s" : ""))
+                    : differenceInHours > 0 ? (differenceInHours + " hour" + (differenceInHours > 1 ? "s" : ""))
+                    : differenceInMinutes > 0 ? (differenceInMinutes + " minute" + (differenceInMinutes > 1 ? "s" : ""))
+                    : (differenceInSeconds + " second" + (differenceInSeconds > 1 ? "s" : "")));
+        }
+
+        // Catch the Exception
+        catch (ParseException | NullPointerException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private String extractImageUrlString(String description) {
+        try {
+            final Pattern pattern = Pattern.compile("src=\"(.+?)\"", Pattern.DOTALL);
+            final Matcher matcher = pattern.matcher(description);
+            matcher.find();
+//        Log.d("getImageUrlString", matcher.group(1));
+            return matcher.group(1);
+        } catch (IllegalStateException e) {
+            Log.d(TAG, e.getMessage());
+            return null;
+        }
+    }
+
+    private String extractDescription(String infoStr) {
+        try {
+            final Pattern pattern = Pattern.compile("</br>(.+)", Pattern.DOTALL);
+            final Matcher matcher = pattern.matcher(infoStr);
+            matcher.find();
+            Log.d("extractDescription", matcher.group(1));
+
+            return (matcher.group(1) != null ? matcher.group(1).substring(0,40) + "..." : null);
+        } catch (IllegalStateException e) {
+            Log.d(TAG, e.getMessage());
+            return null;
+        }
     }
 
     @Override
@@ -106,35 +205,55 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        private TextView textTitle;
-        private Button saveButton;
-        private Button unsaveButton;
+        private TextView pubdateText;
+        private TextView titleText;
+        private TextView descriptionText;
+//        private Button saveButton;
+//        private Button unsaveButton;
         private ImageView imageView;
+        private ImageView bookmarkImage;
+        private ImageView unbookmarkImage;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
 //            new DownloadImageFromInternet(itemView.findViewById(R.id.image_view)).execute("");
 
-            textTitle = itemView.findViewById(R.id.title_text);
-            saveButton = itemView.findViewById(R.id.save_button);
-            unsaveButton = itemView.findViewById(R.id.unsave_button);
+            pubdateText = itemView.findViewById(R.id.pubdate_text);
+            titleText = itemView.findViewById(R.id.title_text);
+            descriptionText = itemView.findViewById(R.id.description_text);
+//            saveButton = itemView.findViewById(R.id.save_button);
+//            unsaveButton = itemView.findViewById(R.id.unsave_button);
             imageView = itemView.findViewById(R.id.image_view);
+            bookmarkImage = itemView.findViewById(R.id.bookmark_icon);
+            unbookmarkImage = itemView.findViewById(R.id.unbookmark_icon);
 
-            itemView.findViewById(R.id.visit_button).setOnClickListener(view ->
+            // Click title to visit
+            titleText.setOnClickListener(view ->
                     handleVisitButtonClick(itemView));
 
-            unsaveButton.setOnClickListener(view ->
+            unbookmarkImage.setOnClickListener(view ->
                     handleUnsaveButtonClick());
-            saveButton.setOnClickListener(view ->
+            bookmarkImage.setOnClickListener(view ->
                     handleSaveButtonClick());
 
+//            unsaveButton.setOnClickListener(view ->
+//                    handleUnsaveButtonClick());
+//            saveButton.setOnClickListener(view ->
+//                    handleSaveButtonClick());
+
             if (!isSaved) {
-                unsaveButton.setVisibility(View.GONE);
-                saveButton.setVisibility(View.VISIBLE);
+                unbookmarkImage.setVisibility(View.GONE);
+                bookmarkImage.setVisibility(View.VISIBLE);
+
+//                unsaveButton.setVisibility(View.GONE);
+//                saveButton.setVisibility(View.VISIBLE);
                 return;
             }
-            saveButton.setVisibility(View.GONE);
-            unsaveButton.setVisibility(View.VISIBLE);
+            bookmarkImage.setVisibility(View.GONE);
+            unbookmarkImage.setVisibility(View.VISIBLE);
+
+//            saveButton.setVisibility(View.GONE);
+//            unsaveButton.setVisibility(View.VISIBLE);
 
         }
 
@@ -161,8 +280,10 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
             intent.putExtra("unsavedItem", item);
 
             // Visible save button
-            unsaveButton.setVisibility(View.GONE);
-            saveButton.setVisibility(View.VISIBLE);
+            unbookmarkImage.setVisibility(View.GONE);
+            bookmarkImage.setVisibility(View.VISIBLE);
+//            unsaveButton.setVisibility(View.GONE);
+//            saveButton.setVisibility(View.VISIBLE);
 
             onSavedItemListener.onUnsavedItemListener(intent);
         }
@@ -199,6 +320,7 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
     // interface to call from activity
     public interface OnSavedItemListener {
         void onSavedItemListener(Intent intent);
+
         void onUnsavedItemListener(Intent intent);
     }
 }
