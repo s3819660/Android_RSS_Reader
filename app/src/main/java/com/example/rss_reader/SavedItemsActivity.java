@@ -9,6 +9,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -24,6 +26,7 @@ import java.util.ArrayList;
 public class SavedItemsActivity extends AppCompatActivity implements FeedItemAdapter.OnSavedItemListener {
     private static final String TAG = "SavedItemsActivity";
 
+    private TextView savedStatusText;
     private RecyclerView recyclerView;
     private FeedItemAdapter feedItemAdapter;
     private ArrayList<FeedItem> savedItems;
@@ -36,12 +39,35 @@ public class SavedItemsActivity extends AppCompatActivity implements FeedItemAda
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_saved_items);
 
+
+        // Initialize services
+        initServices();
+
+        // Get views
+        getViews();
+    }
+
+    private void initServices() {
         // Access a Cloud Firestore instance from your Activity
         db = FirebaseFirestore.getInstance();
 
+        // Get intent data
         getIntentData();
 
+        // Initialize recycler view
         initRecyclerView(this, savedItems);
+    }
+
+    private void getViews() {
+        savedStatusText = findViewById(R.id.saved_status_text);
+        checkEmptySavedItems();
+    }
+
+    private void checkEmptySavedItems() {
+        if (savedItems.isEmpty()) {
+            savedStatusText.setVisibility(View.VISIBLE);
+            savedStatusText.setText(R.string.there_is_no_bookmarks);
+        }
     }
 
     private void getIntentData() {
@@ -91,6 +117,7 @@ public class SavedItemsActivity extends AppCompatActivity implements FeedItemAda
                     try {
                         savedItems.remove(removeIndex);
                         feedItemAdapter.notifyItemRemoved(removeIndex);
+                        checkEmptySavedItems();
                     } catch (IndexOutOfBoundsException e) {
                         Log.d(TAG, e.getMessage());
                     }

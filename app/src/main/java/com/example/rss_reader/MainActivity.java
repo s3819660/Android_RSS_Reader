@@ -1,6 +1,7 @@
 package com.example.rss_reader;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -10,9 +11,13 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.PopupMenu;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -71,12 +76,14 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
 
     private SignInButton signInButton;
     private EditText editText;
-    private Button saveButton;
-    private Button signOutButton;
+    private SearchView searchView;
+    private ImageView menuButton;
     String urlString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -86,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
 
     // Get all view components
     private void getViews() {
+        // Initialize array lists
         titles = new ArrayList<>();
         descriptions = new ArrayList<>();
         links = new ArrayList<>();
@@ -94,18 +102,49 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
         feedItems = new ArrayList<>();
         savedItems = new ArrayList<>();
 
+        // Get reference to views
         signInButton = findViewById(R.id.sign_in_button);
         signInButton.setColorScheme(SignInButton.COLOR_DARK);
-        editText = findViewById(R.id.rss_edit_text);
-
-        saveButton = findViewById(R.id.saved_items_button);
-        signOutButton = findViewById(R.id.sign_out_button);
-
         TextView textView = (TextView) signInButton.getChildAt(0);
         textView.setText(R.string.sign_in_with_google);
         signInButton.setOnClickListener(view -> signIn());
 
+        // URL edit text
+        editText = findViewById(R.id.rss_edit_text);
+        searchView = findViewById(R.id.rss_search_view);
+        // Perform set on query text listener event
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                handleQuerySubmit(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String s) {
+                return false;
+            }
+        });
+
+        // Recycler view for feed
         recyclerView = findViewById(R.id.recycler_view);
+
+        // Popup menu
+        menuButton = findViewById(R.id.menu_icon);
+        menuButton.setOnClickListener(view -> {
+            PopupMenu popupMenu = new PopupMenu(MainActivity.this, menuButton);
+            popupMenu.getMenuInflater().inflate(R.menu.popup_menu, popupMenu.getMenu());
+            popupMenu.setOnMenuItemClickListener(item -> {
+                if (item.getItemId() == R.id.saved_menu_item)
+                    handleSavedListButtonClick();
+                else if (item.getItemId() == R.id.sign_out_menu_item)
+                    handleSignOutButtonClick();
+
+                return true;
+            });
+
+            popupMenu.show();//showing popup menu
+        });
     }
 
     // Initialize Firestore and Firebase authentication
@@ -138,8 +177,9 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
         }
 
         userEmail = "";
-        saveButton.setVisibility(View.GONE);
-        signOutButton.setVisibility(View.GONE);
+
+        // Set visibility
+        menuButton.setVisibility(View.GONE);
     }
 
     private void signIn() {
@@ -165,9 +205,9 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
                 userEmail = account.getEmail();
                 loadSavedFeedItems(false);
 
+                // Set visibility
                 signInButton.setVisibility(View.GONE);
-                saveButton.setVisibility(View.VISIBLE);
-                signOutButton.setVisibility(View.VISIBLE);
+                menuButton.setVisibility(View.VISIBLE);
             } catch (ApiException e) {
                 // Google Sign In failed, update UI appropriately
                 Toast.makeText(this, "Log in failed", Toast.LENGTH_SHORT).show();
@@ -208,11 +248,13 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
     private void updateUI(FirebaseUser user) {
         if (user != null) {
             signInButton.setVisibility(View.GONE);
-            saveButton.setVisibility(View.VISIBLE);
-            signOutButton.setVisibility(View.VISIBLE);
+
+            // Set visibility
+            menuButton.setVisibility(View.VISIBLE);
         } else {
-            saveButton.setVisibility(View.GONE);
-            signOutButton.setVisibility(View.GONE);
+            // Set visibility
+            menuButton.setVisibility(View.GONE);
+
             signInButton.setVisibility(View.VISIBLE);
         }
     }
@@ -268,6 +310,21 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
         startActivity(intent);
     }
 
+    private void handleSavedListButtonClick() {
+        loadSavedFeedItems(true);
+    }
+
+    private void handleSignOutButtonClick() {
+        // Firebase sign out
+        mAuth.signOut();
+
+        // Google signout
+        mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
+            Toast.makeText(getBaseContext(), "You have signed out", Toast.LENGTH_SHORT).show();
+            updateUI(null);
+        });
+    }
+
     public void onSavedListButtonClick(View view) {
         loadSavedFeedItems(true);
     }
@@ -303,6 +360,7 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
                 data.put("title", savedItem.getTitle());
                 data.put("description", savedItem.getDescription());
                 data.put("link", savedItem.getLink());
+                data.put("pubDate", savedItem.getPubDate());
 
                 db.collection(userEmail).document((lastSavedItemIndex + 1 + ""))
                         .set(data)
@@ -340,8 +398,8 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
         });
     }
 
-    public void onSearchButtonClick(View view) {
-        urlString = editText.getText().toString();
+    private void handleQuerySubmit(String query) {
+        urlString = query;
         new ProcessInBackground().execute();
     }
 
@@ -411,8 +469,7 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
                                 pubDate = xpp.nextText();
                                 pubDates.add(pubDate);
                             }
-                        }
-                        else if (xpp.getName().equalsIgnoreCase("link")) {
+                        } else if (xpp.getName().equalsIgnoreCase("link")) {
                             if (insideItem) {
                                 link = xpp.nextText();
                                 links.add(link);

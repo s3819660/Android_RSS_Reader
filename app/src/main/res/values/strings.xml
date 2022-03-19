@@ -10,4 +10,6 @@
     <string name="unsave">unsave</string>
     <string name="image">Image</string>
     <string name="menu">Menu</string>
+    <string name="saved_articles">Saved articles</string>
+    <string name="there_is_no_bookmarks">There is no bookmarks.</string>
 </resources>

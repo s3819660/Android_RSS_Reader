@@ -3,63 +3,87 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:padding="10dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:layout_marginTop="16dp">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="RSS Reader"
+            android:textSize="30sp"
+            android:textStyle="bold | italic"/>
+
+        <ImageView
+            android:id="@+id/menu_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:src="@drawable/ic_baseline_menu_24"
+            android:clickable="true"
+            android:focusable="true"/>
+
+        <com.google.android.gms.common.SignInButton
+            android:id="@+id/sign_in_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end" />
+    </LinearLayout>
+
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <EditText
-            android:id="@+id/rss_edit_text"
+<!--        <com.google.android.material.textfield.TextInputLayout-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="60dp"-->
+<!--            android:layout_weight="1">-->
+<!--            <com.google.android.material.textfield.TextInputEditText-->
+<!--                android:id="@+id/rss_edit_text"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="match_parent"/>-->
+<!--        </com.google.android.material.textfield.TextInputLayout>-->
+
+        <androidx.cardview.widget.CardView
             android:layout_width="0dp"
-            android:layout_height="60dp"
-            android:textSize="14sp"
-            android:hint="@string/url_https_vnexpress_net_rss_kinh_doanh_rss"
+            android:layout_height="40dp"
             android:layout_weight="1"
-            android:inputType="text"
-            android:autofillHints="https://vnexpress.net/rss/kinh-doanh.rss" />
+            android:backgroundTint="#409a9a9a"
+            app:cardCornerRadius="10dp"
+            app:cardElevation="0dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="40dp">
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/search"
-            android:onClick="onSearchButtonClick"/>
+            <SearchView
+                android:id="@+id/rss_search_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:queryBackground="@android:color/transparent"
+                android:iconifiedByDefault="false"
+                android:queryHint="https://vnexpress.net/rss/kinh-doanh.rss"/>
+
+            <EditText
+                android:id="@+id/rss_edit_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone"
+                android:textSize="14sp"
+                android:hint="@string/url_https_vnexpress_net_rss_kinh_doanh_rss"
+                android:inputType="text"
+                android:background="@android:color/transparent"
+                android:backgroundTint="@android:color/holo_blue_bright"
+                android:autofillHints="https://vnexpress.net/rss/kinh-doanh.rss" />
+        </androidx.cardview.widget.CardView>
+
     </LinearLayout>
-
-    <com.google.android.gms.common.SignInButton
-        android:id="@+id/sign_in_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"/>
-
-<!--    <ImageButton-->
-<!--        android:id="@+id/menu_button"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:background="@android:color/transparent"-->
-<!--        android:src="@drawable/ic_baseline_menu_24"-->
-<!--        style="?android:attr/borderlessButtonStyle"-->
-<!--        android:layout_gravity="end"-->
-<!--        android:visibility="gone"-->
-<!--        android:contentDescription="@string/menu" />-->
-
-    <Button
-        android:id="@+id/saved_items_button"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:onClick="onSavedListButtonClick"
-        android:text="@string/saved"
-        android:layout_gravity="center"/>
-
-    <Button
-        android:id="@+id/sign_out_button"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:onClick="onSignOutBtnClick"
-        android:text="@string/sign_out"
-        android:layout_gravity="center"
-        android:backgroundTint="@color/black"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"

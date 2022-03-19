@@ -158,10 +158,10 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
                             + differenceInSeconds
                             + " seconds");
 
-            return (differenceInYears > 0 ? (differenceInYears + " year" + (differenceInYears > 1 ? "s" : ""))
-                    : differenceInDays > 0 ? (differenceInDays + " day" + (differenceInDays > 1 ? "s" : ""))
-                    : differenceInHours > 0 ? (differenceInHours + " hour" + (differenceInHours > 1 ? "s" : ""))
-                    : differenceInMinutes > 0 ? (differenceInMinutes + " minute" + (differenceInMinutes > 1 ? "s" : ""))
+            return (differenceInYears > 0 ? (differenceInYears + " year" + (differenceInYears > 1 ? "s ago" : " ago"))
+                    : differenceInDays > 0 ? (differenceInDays + " day" + (differenceInDays > 1 ? "s ago" : " ago"))
+                    : differenceInHours > 0 ? (differenceInHours + " hour" + (differenceInHours > 1 ? "s ago" : " ago"))
+                    : differenceInMinutes > 0 ? (differenceInMinutes + " minute" + (differenceInMinutes > 1 ? "s ago" : " ago"))
                     : (differenceInSeconds + " second" + (differenceInSeconds > 1 ? "s" : "")));
         }
 
@@ -192,7 +192,7 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
             matcher.find();
             Log.d("extractDescription", matcher.group(1));
 
-            return (matcher.group(1) != null ? matcher.group(1).substring(0,40) + "..." : null);
+            return (matcher.group(1) != null ? matcher.group(1).substring(0,34) + "..." : null);
         } catch (IllegalStateException e) {
             Log.d(TAG, e.getMessage());
             return null;
@@ -296,7 +296,7 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
         public DownloadImageFromInternet(ImageView imageView) {
             this.imageView = imageView;
 
-            Toast.makeText(mContext, "Loading image...", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(mContext, "Loading image...", Toast.LENGTH_SHORT).show();
         }
 
         protected Bitmap doInBackground(String... urls) {
