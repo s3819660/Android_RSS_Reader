@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 public class SavedItemsActivity extends AppCompatActivity implements FeedItemAdapter.OnSavedItemListener {
     private static final String TAG = "SavedItemsActivity";
 
+    private ImageView backImage;
     private TextView savedStatusText;
     private RecyclerView recyclerView;
     private FeedItemAdapter feedItemAdapter;
@@ -59,6 +61,9 @@ public class SavedItemsActivity extends AppCompatActivity implements FeedItemAda
     }
 
     private void getViews() {
+        backImage = findViewById(R.id.back_icon);
+        backImage.setOnClickListener(view -> finish());
+
         savedStatusText = findViewById(R.id.saved_status_text);
         checkEmptySavedItems();
     }
