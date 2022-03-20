@@ -418,7 +418,7 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
 
         @Override
         protected Exception doInBackground(Integer... integers) {
-            Log.d(TAG, "getRSSFeed=" + urlString);
+//            Log.d(TAG, "getRSSFeed=" + urlString);
 
             return getRSSFeed(urlString);
         }

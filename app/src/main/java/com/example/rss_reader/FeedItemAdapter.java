@@ -6,6 +6,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -69,13 +72,23 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
     @Override
     public void onBindViewHolder(@NonNull FeedItemAdapter.ViewHolder viewHolder, int i) {
         FeedItem feedItem = items.get(i);
-        viewHolder.titleText.setText(feedItem.getTitle());
-        viewHolder.pubdateText.setText(calculateTimeDifference(feedItem.getPubDate()));
-        viewHolder.descriptionText.setText(extractDescription(feedItem.getDescription()));
 
+        // Feed item details
+        String title = feedItem.getTitle();
+        viewHolder.titleText.setText(title);
+        viewHolder.pubdateText.setText(calculateTimeDifference(feedItem.getPubDate()));
+        String description = extractDescription(feedItem.getDescription());
+        viewHolder.descriptionText.setText(description);
+        // Set dynamic number of lines for description
+        if (title.length() > 60 && description != null) {
+            String text = description.substring(0, 32) + "...";
+            viewHolder.descriptionText.setText(text);
+        }
+
+        // Get feed item image
         new DownloadImageFromInternet(viewHolder.imageView).execute(extractImageUrlString(feedItem.getDescription()));
 
-
+        // Check if item was bookmarked
         for (FeedItem item :
                 savedItems) {
             if (item.getLink().equalsIgnoreCase(feedItem.getLink())) {
@@ -190,9 +203,9 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
             final Pattern pattern = Pattern.compile("</br>(.+)", Pattern.DOTALL);
             final Matcher matcher = pattern.matcher(infoStr);
             matcher.find();
-            Log.d("extractDescription", matcher.group(1));
+//            Log.d("extractDescription", matcher.group(1));
 
-            return (matcher.group(1) != null ? matcher.group(1).substring(0,34) + "..." : null);
+            return (matcher.group(1) != null ? matcher.group(1) : null);
         } catch (IllegalStateException e) {
             Log.d(TAG, e.getMessage());
             return null;
@@ -208,7 +221,7 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
         private TextView pubdateText;
         private TextView titleText;
         private TextView descriptionText;
-//        private Button saveButton;
+        //        private Button saveButton;
 //        private Button unsaveButton;
         private ImageView imageView;
         private ImageView bookmarkImage;

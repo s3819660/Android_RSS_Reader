@@ -17,9 +17,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="RSS Reader"
-            android:textSize="30sp"
-            android:textStyle="bold | italic"/>
+            android:text="RR"
+            android:fontFamily="@font/rubik_extrabold_italic"
+            android:textSize="30sp"/>
 
         <ImageView
             android:id="@+id/menu_icon"
