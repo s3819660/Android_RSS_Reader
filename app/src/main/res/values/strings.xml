@@ -15,4 +15,6 @@
     <string name="your_feed">Your Feed</string>
     <string name="rr_feed">RR Feed</string>
     <string name="back_button">Back button</string>
+    <string name="category_image">Category image</string>
+    <string name="gradient_background">Gradient background</string>
 </resources>
