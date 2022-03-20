@@ -41,6 +41,7 @@ import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -181,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
 
     // Initialize Firestore and Firebase authentication
     private void initServices() {
-        new ProcessInBackground().execute();
+        new ProcessInBackground(this).execute();
 
         // Configure Google Sign In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -264,6 +265,34 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
                 });
     }
 
+    public String getUserEmail() {
+        return userEmail;
+    }
+
+    public ArrayList<String> getTitles() {
+        return titles;
+    }
+
+    public ArrayList<String> getDescriptions() {
+        return descriptions;
+    }
+
+    public ArrayList<String> getLinks() {
+        return links;
+    }
+
+    public ArrayList<String> getPubDates() {
+        return pubDates;
+    }
+
+    public String getUrlString() {
+        return urlString;
+    }
+
+    public ArrayList<FeedItem> getFeedItems() {
+        return feedItems;
+    }
+
     @Override
     public void onStart() {
         super.onStart();
@@ -323,15 +352,6 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
                 });
     }
 
-    private InputStream getInputStream(URL url) {
-        try {
-            return url.openConnection().getInputStream();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     private void startSavedItemsActivity() {
         Intent intent = new Intent(this, SavedItemsActivity.class);
         intent.putParcelableArrayListExtra("items", savedItems);
@@ -382,7 +402,7 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
                         .set(data)
                         .addOnSuccessListener(documentReference -> {
 //                            Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
-                            Toast.makeText(getBaseContext(), "Saved item " + savedItem.getTitle() + " " + savedItem.getLink(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getBaseContext(), "Saved bookmark.", Toast.LENGTH_SHORT).show();
 
                             loadSavedFeedItems(false);
                         })
@@ -416,7 +436,7 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
 
     private void handleQuerySubmit(String query) {
         urlString = query;
-        new ProcessInBackground().execute();
+        new ProcessInBackground(this).execute();
     }
 
     @Override
@@ -425,14 +445,38 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
         categoryString = intent.getStringExtra("categoryTitle");
         categoryText.setText(categoryString.toUpperCase(Locale.ROOT));
 
-        new ProcessInBackground().execute();
+        new ProcessInBackground(this).execute();
     }
 
     // Async task to retrieve RSS feed
-    public class ProcessInBackground extends AsyncTask<Integer, Void, Exception> {
+    public static class ProcessInBackground extends AsyncTask<Integer, Void, Exception> {
 
-        ProgressDialog progressDialog = new ProgressDialog(MainActivity.this);
-        Exception exception = null;
+        private WeakReference<MainActivity> activityReference;
+        private ProgressDialog progressDialog;
+        private Exception exception = null;
+
+        private String urlString;
+        private String userEmail;
+        private ArrayList<FeedItem> feedItems;
+        private ArrayList<String> titles;
+        private ArrayList<String> descriptions;
+        private ArrayList<String> pubDates;
+        private ArrayList<String> links;
+
+        public ProcessInBackground(MainActivity context) {
+            this.activityReference = new WeakReference<>(context);
+            MainActivity mainActivityRef = activityReference.get();
+            progressDialog = new ProgressDialog(mainActivityRef);
+
+
+            urlString = mainActivityRef.getUrlString();
+            userEmail = mainActivityRef.getUserEmail();
+            feedItems = mainActivityRef.getFeedItems();
+            titles = mainActivityRef.getTitles();
+            descriptions = mainActivityRef.getDescriptions();
+            pubDates = mainActivityRef.getPubDates();
+            links = mainActivityRef.getLinks();
+        }
 
         @Override
         protected void onPreExecute() {
@@ -509,24 +553,31 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
 
                     eventType = xpp.next();
                 }
-            } catch (MalformedURLException e) {
-                exception = e;
-            } catch (XmlPullParserException e) {
-                exception = e;
-            } catch (IOException e) {
+            } catch (XmlPullParserException | IOException e) {
                 exception = e;
             }
 
             return exception;
         }
 
+        private InputStream getInputStream(URL url) {
+            try {
+                return url.openConnection().getInputStream();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
         @Override
         protected void onPostExecute(Exception e) {
             super.onPostExecute(e);
 
-            if (userEmail.isEmpty())
-                initRecyclerView(MainActivity.this, feedItems);
-            else loadSavedFeedItems(false);
+            MainActivity mainActivityRef = activityReference.get();
+
+            if (userEmail == null || userEmail.isEmpty())
+                mainActivityRef.initRecyclerView(mainActivityRef, feedItems);
+            else mainActivityRef.loadSavedFeedItems(false);
 
             progressDialog.dismiss();
         }
