@@ -4,7 +4,7 @@ nphucnguyen.work@gmail.com
 
 ##### _RSS reader app to retrieve RSS feed from various sources._
 
-[![RSS Reader](https://i.imgur.com/lgXpTAi.png)]
+![RSS Reader](https://i.imgur.com/lgXpTAi.png)
 
 ## Features
 
