@@ -17,4 +17,6 @@
     <string name="back_button">Back button</string>
     <string name="category_image">Category image</string>
     <string name="gradient_background">Gradient background</string>
+    <string name="menu_icon">Menu icon</string>
+    <string name="overview">OVERVIEW</string>
 </resources>
