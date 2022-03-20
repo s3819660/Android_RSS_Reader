@@ -4,6 +4,8 @@ nphucnguyen.work@gmail.com
 
 ##### _RSS reader app to retrieve RSS feed from various sources._
 
+[![RSS Reader](https://i.imgur.com/lgXpTAi.png)]
+
 ## Features
 
 - Google Sign In
@@ -14,7 +16,8 @@ nphucnguyen.work@gmail.com
 
 RSS Reader uses a number of open source projects to work properly:
 
-- [Firebase] - Firestore database and Firebase authentication
+- [Firestore] - Firestore database to store bookmarked feed item.
+- [Firebase Authentication] - Firebase authentication to integrate Google sign in.
 
 ## Installation
 
@@ -22,4 +25,5 @@ RSS Reader requires a min SDK version of 23 to run.
 
 [//]: #
 
-   [Firebase]: <https://firebase.google.com/>
+   [Firestore]: <https://firebase.google.com/docs/firestore/>
+   [Firebase Authentication]: <https://firebase.google.com/docs/auth/>
