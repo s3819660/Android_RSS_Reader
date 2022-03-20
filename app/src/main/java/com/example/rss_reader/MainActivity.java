@@ -468,7 +468,6 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
             MainActivity mainActivityRef = activityReference.get();
             progressDialog = new ProgressDialog(mainActivityRef);
 
-
             urlString = mainActivityRef.getUrlString();
             userEmail = mainActivityRef.getUserEmail();
             feedItems = mainActivityRef.getFeedItems();

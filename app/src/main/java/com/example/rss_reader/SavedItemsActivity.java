@@ -117,7 +117,7 @@ public class SavedItemsActivity extends AppCompatActivity implements FeedItemAda
         query.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 for (DocumentSnapshot document : task.getResult()) {
-                    Log.d(TAG, "here" + document.toString());
+//                    Log.d(TAG, "here" + document.toString());
                     itemsRef.document(document.getId()).delete();
                     try {
                         savedItems.remove(removeIndex);

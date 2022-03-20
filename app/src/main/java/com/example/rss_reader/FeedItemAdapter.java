@@ -114,7 +114,7 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
             // parse method is used to parse
             // the text from a string to
             // produce the date
-            Log.d(TAG, "startDateStr=" + startDateStr);
+//            Log.d(TAG, "startDateStr=" + startDateStr);
 
             Date date1 = formatter.parse(startDateStr);
             Date date2 = new Date();
@@ -147,27 +147,12 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
 
             long differenceInYears
                     = (differenceInTime
-                    / (1000l * 60 * 60 * 24 * 365));
+                    / (1000L * 60 * 60 * 24 * 365));
 
             long differenceInDays
                     = (differenceInTime
                     / (1000 * 60 * 60 * 24))
                     % 365;
-
-            // Print the date difference in
-            // years, in days, in hours, in
-            // minutes, and in seconds
-            Log.d(TAG,
-                    differenceInYears
-                            + " years, "
-                            + differenceInDays
-                            + " days, "
-                            + differenceInHours
-                            + " hours, "
-                            + differenceInMinutes
-                            + " minutes, "
-                            + differenceInSeconds
-                            + " seconds");
 
             return (differenceInYears > 0 ? (differenceInYears + " year" + (differenceInYears > 1 ? "s ago" : " ago"))
                     : differenceInDays > 0 ? (differenceInDays + " day" + (differenceInDays > 1 ? "s ago" : " ago"))
