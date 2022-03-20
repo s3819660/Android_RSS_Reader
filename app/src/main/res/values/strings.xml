@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">RSS_Reader</string>
+    <string name="app_name">RSS Reader</string>
     <string name="sign_in_with_google">Sign in with Google</string>
     <string name="saved">Saved</string>
     <string name="sign_out">Sign out</string>
@@ -12,4 +12,6 @@
     <string name="menu">Menu</string>
     <string name="saved_articles">Saved articles</string>
     <string name="there_is_no_bookmarks">There is no bookmarks.</string>
+    <string name="your_feed">Your Feed</string>
+    <string name="rr_feed">RR Feed</string>
 </resources>

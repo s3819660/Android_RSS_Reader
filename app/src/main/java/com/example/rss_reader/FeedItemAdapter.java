@@ -22,6 +22,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -76,6 +78,7 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
         // Feed item details
         String title = feedItem.getTitle();
         viewHolder.titleText.setText(title);
+        viewHolder.sourceText.setText(extractSourceString(feedItem.getLink()));
         viewHolder.pubdateText.setText(calculateTimeDifference(feedItem.getPubDate()));
         String description = extractDescription(feedItem.getDescription());
         viewHolder.descriptionText.setText(description);
@@ -185,6 +188,22 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
         }
     }
 
+    private String extractSourceString(String link) {
+        try {
+            URL url = new URL(link);
+
+            String hostName = url.getHost().split("\\.")[0];
+
+            if (hostName.isEmpty())
+                return null;
+
+            return hostName.startsWith("www") ? hostName.substring(4) : hostName;
+        } catch (MalformedURLException e) {
+            Log.d(TAG, e.getMessage());
+            return null;
+        }
+    }
+
     private String extractImageUrlString(String description) {
         try {
             final Pattern pattern = Pattern.compile("src=\"(.+?)\"", Pattern.DOTALL);
@@ -218,6 +237,7 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
+        private TextView sourceText;
         private TextView pubdateText;
         private TextView titleText;
         private TextView descriptionText;
@@ -231,6 +251,7 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
             super(itemView);
 //            new DownloadImageFromInternet(itemView.findViewById(R.id.image_view)).execute("");
 
+            sourceText = itemView.findViewById(R.id.source_text);
             pubdateText = itemView.findViewById(R.id.pubdate_text);
             titleText = itemView.findViewById(R.id.title_text);
             descriptionText = itemView.findViewById(R.id.description_text);
