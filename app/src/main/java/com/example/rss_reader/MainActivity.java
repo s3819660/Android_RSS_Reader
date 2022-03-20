@@ -167,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
                 , R.drawable.science));
         categories.add(new Category("Health", "https://vnexpress.net/rss/suc-khoe.rss"
                 , R.drawable.health));
-        categories.add(new Category("Sports", "https://vnexpress.net/rss/suc-khoe.rss"
+        categories.add(new Category("Sports", "https://vnexpress.net/rss/the-thao.rss"
                 , R.drawable.sports));
         categories.add(new Category("Entertainment", "https://vnexpress.net/rss/giai-tri.rss"
                 , R.drawable.entertainment));
@@ -232,7 +232,7 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
                 GoogleSignInAccount account = task.getResult(ApiException.class);
                 Log.d(TAG, "firebaseAuthWithGoogle:" + account.getId());
                 firebaseAuthWithGoogle(account.getIdToken());
-                Toast.makeText(this, "Successfully logged in", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Successfully logged in.", Toast.LENGTH_SHORT).show();
 
                 userEmail = account.getEmail();
                 loadSavedFeedItems(false);
@@ -242,7 +242,7 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
                 menuButton.setVisibility(View.VISIBLE);
             } catch (ApiException e) {
                 // Google Sign In failed, update UI appropriately
-                Toast.makeText(this, "Log in failed", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Log in failed.", Toast.LENGTH_SHORT).show();
                 Log.w(TAG, "Google sign in failed", e);
             }
         }
@@ -371,7 +371,7 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
 
         // Google signout
         mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
-            Toast.makeText(getBaseContext(), "You have signed out", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getBaseContext(), "You have signed out.", Toast.LENGTH_SHORT).show();
             updateUI(null);
         });
     }
@@ -408,7 +408,7 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
                         })
                         .addOnFailureListener(e -> {
                             Log.w(TAG, "Error adding document", e);
-                            Toast.makeText(getBaseContext(), "Cannot save item", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getBaseContext(), "Cannot bookmark.", Toast.LENGTH_SHORT).show();
                         });
             } else {
                 signIn();

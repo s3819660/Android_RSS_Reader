@@ -304,13 +304,11 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
     }
 
     // Async task to download RSS news item image
-    private class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
+    private static class DownloadImageFromInternet extends AsyncTask<String, Void, Bitmap> {
         ImageView imageView;
 
         public DownloadImageFromInternet(ImageView imageView) {
             this.imageView = imageView;
-
-//            Toast.makeText(mContext, "Loading image...", Toast.LENGTH_SHORT).show();
         }
 
         protected Bitmap doInBackground(String... urls) {
