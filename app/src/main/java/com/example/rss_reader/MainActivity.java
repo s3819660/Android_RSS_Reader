@@ -54,7 +54,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity implements FeedItemAdapter.OnSavedItemListener {
+public class MainActivity extends AppCompatActivity implements FeedItemAdapter.OnSavedItemListener, CategoryAdapter.OnCategoryClickListener {
     private static final String TAG = "MainActivity";
     private static final int RC_SIGN_IN = 9001;
 
@@ -67,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
     ArrayList<String> descriptions;
     ArrayList<String> links;
     ArrayList<String> pubDates;
+    ArrayList<Category> categories;
 
     private RecyclerView recyclerView;
     private FeedItemAdapter feedItemAdapter;
@@ -75,10 +76,9 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
     private int lastSavedItemIndex;
 
     private SignInButton signInButton;
-    private EditText editText;
     private SearchView searchView;
     private ImageView menuButton;
-    String urlString;
+    private String urlString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,6 +86,9 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Initialize feed url
+        urlString = "https://vnexpress.net/rss/the-gioi.rss";
 
         // Get views
         getViews();
@@ -102,6 +105,9 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
         feedItems = new ArrayList<>();
         savedItems = new ArrayList<>();
 
+        categories = new ArrayList<>();
+        initCategories();
+
         // Get reference to views
         signInButton = findViewById(R.id.sign_in_button);
         signInButton.setColorScheme(SignInButton.COLOR_DARK);
@@ -110,7 +116,6 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
         signInButton.setOnClickListener(view -> signIn());
 
         // URL edit text
-        editText = findViewById(R.id.rss_edit_text);
         searchView = findViewById(R.id.rss_search_view);
         // Perform set on query text listener event
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -147,9 +152,34 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
         });
     }
 
+    private void initCategories() {
+        categories.add(new Category("World", "https://vnexpress.net/rss/the-gioi.rss"
+                , R.drawable.world));
+        categories.add(new Category("Politics", "https://vnexpress.net/rss/thoi-su.rss"
+                , R.drawable.politics));
+        categories.add(new Category("Business", "https://vnexpress.net/rss/kinh-doanh.rss"
+                , R.drawable.business));
+        categories.add(new Category("Tech", "https://vnexpress.net/rss/so-hoa.rss"
+                , R.drawable.tech));
+        categories.add(new Category("Science", "https://vnexpress.net/rss/khoa-hoc.rss"
+                , R.drawable.science));
+        categories.add(new Category("Health", "https://vnexpress.net/rss/suc-khoe.rss"
+                , R.drawable.health));
+        categories.add(new Category("Sports", "https://vnexpress.net/rss/suc-khoe.rss"
+                , R.drawable.sports));
+        categories.add(new Category("Entertainment", "https://vnexpress.net/rss/giai-tri.rss"
+                , R.drawable.entertainment));
+        categories.add(new Category("Food", "https://thanhnien.vn/rss/video/mon-ngon-350.rss"
+                , R.drawable.food));
+
+        RecyclerView categoryRecyclerView = findViewById(R.id.category_recycler_view);
+        CategoryAdapter categoryAdapter = new CategoryAdapter(this, categories);
+        categoryRecyclerView.setAdapter(categoryAdapter);
+        categoryRecyclerView.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
+    }
+
     // Initialize Firestore and Firebase authentication
     private void initServices() {
-        urlString = "https://vnexpress.net/rss/the-gioi.rss";
         new ProcessInBackground().execute();
 
         // Configure Google Sign In
@@ -325,21 +355,6 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
         });
     }
 
-    public void onSavedListButtonClick(View view) {
-        loadSavedFeedItems(true);
-    }
-
-    public void onSignOutBtnClick(View view) {
-        // Firebase sign out
-        mAuth.signOut();
-
-        // Google signout
-        mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
-            Toast.makeText(getBaseContext(), "You have signed out", Toast.LENGTH_SHORT).show();
-            updateUI(null);
-        });
-    }
-
     @Override
     public void onSavedItemListener(Intent intent) {
         FeedItem savedItem = intent.getParcelableExtra("savedItem");
@@ -400,6 +415,12 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
 
     private void handleQuerySubmit(String query) {
         urlString = query;
+        new ProcessInBackground().execute();
+    }
+
+    @Override
+    public void onCategoryClickListener(Intent intent) {
+        urlString = intent.getStringExtra("categoryUrl");
         new ProcessInBackground().execute();
     }
 

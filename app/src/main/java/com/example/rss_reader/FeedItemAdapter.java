@@ -6,17 +6,12 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.text.Editable;
-import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -49,7 +44,7 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
         try {
             this.onSavedItemListener = ((OnSavedItemListener) mContext);
         } catch (ClassCastException e) {
-            Log.d("FeedItemAdapter", e.getMessage());
+            Log.d(TAG, e.getMessage());
         }
 
 //        for (FeedItem item:
@@ -67,7 +62,7 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
     @Override
     public FeedItemAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         LayoutInflater inflater = LayoutInflater.from(mContext);
-        View view = inflater.inflate(R.layout.feed_item_row, viewGroup, false);
+        View view = inflater.inflate(R.layout.feed_item, viewGroup, false);
         return new ViewHolder(view);
     }
 
