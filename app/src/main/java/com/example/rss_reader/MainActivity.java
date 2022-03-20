@@ -11,10 +11,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.SearchView;
@@ -46,10 +43,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -77,8 +71,10 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
 
     private SignInButton signInButton;
     private SearchView searchView;
+    private TextView categoryText;
     private ImageView menuButton;
     private String urlString;
+    private String categoryString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,6 +85,7 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
 
         // Initialize feed url
         urlString = "https://vnexpress.net/rss/the-gioi.rss";
+        categoryString = "WORLD";
 
         // Get views
         getViews();
@@ -150,6 +147,10 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
 
             popupMenu.show();//showing popup menu
         });
+
+        // Category
+        categoryText = findViewById(R.id.category_text);
+        categoryText.setText(categoryString);
     }
 
     private void initCategories() {
@@ -421,6 +422,9 @@ public class MainActivity extends AppCompatActivity implements FeedItemAdapter.O
     @Override
     public void onCategoryClickListener(Intent intent) {
         urlString = intent.getStringExtra("categoryUrl");
+        categoryString = intent.getStringExtra("categoryTitle");
+        categoryText.setText(categoryString.toUpperCase(Locale.ROOT));
+
         new ProcessInBackground().execute();
     }
 

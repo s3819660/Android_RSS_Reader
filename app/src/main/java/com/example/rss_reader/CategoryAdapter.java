@@ -67,17 +67,13 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
             imageView = itemView.findViewById(R.id.category_image);
             textView = itemView.findViewById(R.id.category_title_text);
 
-            cardView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    handleCategoryClick(categories.get(getBindingAdapterPosition()));
-                }
-            });
+            cardView.setOnClickListener(view -> handleCategoryClick(categories.get(getBindingAdapterPosition())));
         }
 
         private void handleCategoryClick(Category category) {
             Intent intent = new Intent();
             intent.putExtra("categoryUrl", category.getUrl());
+            intent.putExtra("categoryTitle", category.getTitle());
 
             onCategoryClickListener.onCategoryClickListener(intent);
         }
